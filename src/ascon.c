@@ -44,6 +44,7 @@ INLINE void ascon_round(AsconState *state, uint64_t constant);
 // For hashing functions
 INLINE void ascon_absorb(AsconState *state, const uint8_t *input, size_t input_len);
 INLINE void ascon_squeeze(AsconState *state, uint8_t *output, size_t output_len);
+void zeroize(void *ptr, size_t len);
 
 INLINE uint64_t read_u64(const uint8_t *ptr, size_t len) {
     uint64_t result = 0;
@@ -248,6 +249,9 @@ void ascon_aead_finalize(AsconAeadState *aead_state, uint8_t *tag) {
 
     memcpy(tag, aead_state->state.inner[3].b, 8);
     memcpy(tag + 8, aead_state->state.inner[4].b, 8);
+
+    zeroize(aead_state->state.inner, sizeof(AsconState));
+    zeroize(aead_state->key, ASCON_KEY_SIZE);
 }
 
 void ascon_aead_decrypt_update(
@@ -340,6 +344,9 @@ int ascon_aead_decrypt_finalize(AsconAeadState *aead_state, const uint8_t *tag) 
 
     fold |= -fold;
 
+    zeroize(aead_state->state.inner, sizeof(AsconState));
+    zeroize(aead_state->key, ASCON_KEY_SIZE);
+
     return (fold >> 31) ^ 1;
 }
 
@@ -360,6 +367,7 @@ void ascon_hash256_update(AsconState *state, const uint8_t *input, size_t input_
 
 void ascon_hash256_finalize(AsconState *state, uint8_t *output) {
     ascon_squeeze(state, output, ASCON_HASH_SIZE);
+    zeroize(state, sizeof(AsconState));
 }
 
 void ascon_xof128_init(AsconState *state) {
@@ -378,6 +386,7 @@ void ascon_xof128_update(AsconState *state, const uint8_t *input, size_t input_l
 
 void ascon_xof128_finalize(AsconState *state, uint8_t *output, size_t output_len) {
     ascon_squeeze(state, output, output_len);
+    zeroize(state, sizeof(AsconState));
 }
 
 void ascon_cxof128_init(AsconState *state, const uint8_t *custom_data, size_t custom_data_len) {
@@ -405,6 +414,7 @@ void ascon_cxof128_update(AsconState *state, const uint8_t *input, size_t input_
 
 void ascon_cxof128_finalize(AsconState *state, uint8_t *output, size_t output_len) {
     ascon_squeeze(state, output, output_len);
+    zeroize(state, sizeof(AsconState));
 }
 
 INLINE void ascon_absorb(AsconState *state, const uint8_t *input, size_t input_len) {
@@ -500,6 +510,10 @@ INLINE void ascon_round(AsconState *state, uint64_t constant) {
 }
 
 /// https://www.cryptologie.net/article/419/zeroing-memory-compiler-optimizations-and-memset_s/
+/// Securely zeroizes a buffer to prevent sensitive data leakage
+/// Ensuring that the process is not optimized away by the compiler
+/// @param ptr Pointer to the buffer to be zeroized
+/// @param len Length of the buffer
 void zeroize(void *ptr, size_t len) {
     volatile uint8_t *p = ptr;
     while (len--) {

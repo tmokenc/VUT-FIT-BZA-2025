@@ -137,12 +137,4 @@ void ascon_cxof128_init(AsconState *state, const uint8_t *custom_data, size_t cu
 void ascon_cxof128_update(AsconState *state, const uint8_t *input, size_t input_len);
 void ascon_cxof128_finalize(AsconState *state, uint8_t *output, size_t output_len);
 
-// =========== Utility functions ===========
-
-/// Securely zeroizes a buffer to prevent sensitive data leakage
-/// Ensuring that the process is not optimized away by the compiler
-/// @param ptr Pointer to the buffer to be zeroized
-/// @param len Length of the buffer
-void zeroize(void *ptr, size_t len);
-
 #endif
