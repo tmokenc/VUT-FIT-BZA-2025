@@ -19,11 +19,11 @@ TEST_DEBUG_OBJS=$(subst $(BUILD_DIR)/main-debug.o,,$(DEBUG_OBJS))
 
 DOCS=$(wildcard $(DOC_DIR)/*.typ)
 
-$(PROJ): $(OBJS)
-	$(CC) $(CFLAGS) -o $@ $^
-
-debug: $(DEBUG_OBJS)
-	$(CC) $(DEBUG_FLAG) $(CFLAGS) -o $(PROJ) $^
+# $(PROJ): $(OBJS)
+# 	$(CC) $(CFLAGS) -o $@ $^
+# 
+# debug: $(DEBUG_OBJS)
+# 	$(CC) $(DEBUG_FLAG) $(CFLAGS) -o $(PROJ) $^
 
 test: test/main.c $(TEST_OBJS)
 	$(CC) $(CFLAGS) -o $(BUILD_DIR)/test $^ && \
